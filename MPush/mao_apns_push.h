@@ -31,6 +31,5 @@ int mao_apns_push_msg(const char* cert_path,
 					  int sound_on,
 					  int times);
 
-void mao_apns_token_to_bytes(const char* device_token, unsigned char* bytes);
 
 #endif /* mao_apns_push_h */

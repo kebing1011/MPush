@@ -20,7 +20,7 @@ void usage()
 	printf("+  author:maokebing            +\n");
 	printf("+  mail:kebing1011@163.com     +\n");
 	printf("+------------------------------+\n");
-	printf("usage: mpush [-c cert_file(.pem) -d device_token(hex string)] \n");
+	printf("usage: mpush [-c cert_file(.pem) -d device_token(hex string or base64 string)] \n");
 	printf("or           [-m message] \n");
 	printf("or           [-b badge]   \n");
 	printf("or           [-t times]   \n");

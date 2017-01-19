@@ -30,8 +30,9 @@ X509                   *cert = NULL;
 EVP_PKEY               *key  = NULL;
 BIO                    *bio  = NULL;
 
+const char * base64char = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-int hexatoi(char a)
+int mao_apns_hexatoi(char a)
 {
 	if (a >= '0' && a <= '9')
 	{
@@ -51,16 +52,80 @@ int hexatoi(char a)
 	return 0;
 }
 
-void mao_apns_token_to_bytes(const char* device_token, unsigned char* bytes)
+int base64_decode( const char * base64, unsigned char * bindata )
 {
-	char token[128] = {'\0'};
-	memcpy(token, device_token, strlen(device_token));
-	
-	//trim space
-	char *p = token;
-	char *q = token;
+	int i, j;
+	unsigned char k;
+	unsigned char temp[4];
+	for ( i = 0, j = 0; base64[i] != '\0' ; i += 4 )
+	{
+		memset( temp, 0xFF, sizeof(temp) );
+		for ( k = 0 ; k < 64 ; k ++ )
+		{
+			if ( base64char[k] == base64[i] )
+				temp[0]= k;
+		}
+		for ( k = 0 ; k < 64 ; k ++ )
+		{
+			if ( base64char[k] == base64[i+1] )
+				temp[1]= k;
+		}
+		for ( k = 0 ; k < 64 ; k ++ )
+		{
+			if ( base64char[k] == base64[i+2] )
+				temp[2]= k;
+		}
+		for ( k = 0 ; k < 64 ; k ++ )
+		{
+			if ( base64char[k] == base64[i+3] )
+				temp[3]= k;
+		}
+		
+		bindata[j++] = ((unsigned char)(((unsigned char)(temp[0] << 2))&0xFC)) |
+		((unsigned char)((unsigned char)(temp[1]>>4)&0x03));
+		if ( base64[i+2] == '=' )
+			break;
+		
+		bindata[j++] = ((unsigned char)(((unsigned char)(temp[1] << 4))&0xF0)) |
+		((unsigned char)((unsigned char)(temp[2]>>2)&0x0F));
+		if ( base64[i+3] == '=' )
+			break;
+		
+		bindata[j++] = ((unsigned char)(((unsigned char)(temp[2] << 6))&0xF0)) |
+		((unsigned char)(temp[3]&0x3F));
+	}
+	return j;
+}
 
-	while (*p != '\0')
+
+int mao_apns_check_is_hex(const char* token)
+{
+	const char* p = token;
+	while (*p) {
+		if ((*p > 'f' && *p < 'z')
+			|| (*p > 'F' && *p < 'Z')
+			|| *p == '/'
+			|| *p == '+'
+			|| *p == '=')
+			return 0;
+		p++;
+	}
+	
+	return 1;
+}
+
+int mao_apns_trim_string(const char* src, char* dest)
+{
+	if (strlen(src) > 255)
+	{
+		printf("device token is too large.\n");
+		return -1;
+	}
+	
+	char *p = dest;
+	const char *q = src;
+	
+	while (*q != '\0')
 	{
 		if (*q != ' ')
 		{
@@ -69,12 +134,17 @@ void mao_apns_token_to_bytes(const char* device_token, unsigned char* bytes)
 		++q;
 	}
 	
+	return 0;
+}
+
+void mao_apns_token_to_bytes(char* device_token, unsigned char* bytes)
+{
 	//to byte
-	p = token;
+	char* p = device_token;
 	int i = 0;
 	while (*p != '\0') {
-		int h = hexatoi(*p++) & 0xF;
-		int l = hexatoi(*p++) & 0xF;
+		int h = mao_apns_hexatoi(*p++) & 0xF;
+		int l = mao_apns_hexatoi(*p++) & 0xF;
 		
 		bytes[i++] = (h * 16 + l) & 0xFF;
 	}
@@ -104,7 +174,16 @@ int mao_apns_push(const char* device_token,
 		
 	sprintf(payload, fmt, msg, badge_count);
 	
-	mao_apns_token_to_bytes(device_token, token_bytes);
+	//trim string
+	char token[255] = {0};
+	if (mao_apns_trim_string(device_token, token))
+		return -1;
+	
+	//check b64
+	if (mao_apns_check_is_hex(token))
+		mao_apns_token_to_bytes(token, token_bytes);
+	else
+		base64_decode(token, token_bytes);
 	
 	unsigned char command = 0;
 	size_t payloadLength = strlen(payload);
