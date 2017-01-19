@@ -1,4 +1,4 @@
-## MPush for (Maxos & Windows)
+## MPush for (Macos & Windows & Linux)
 
 ```java
 +------------------------------+
