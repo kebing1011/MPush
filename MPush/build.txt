@@ -1,5 +1,12 @@
- mingw:
+dependence openssl
+ 
+mingw:
  gcc mao_apns_push.c  mpush.c /c/MinGW/lib/libssl.a /c/MinGW/lib/libcrypto.a -l wsock32 -lgdi32 -static -o mpush
 
  macos:
  gcc mpush.c mao_apns_push.c -I /usr/local/Cellar/openssl/1.0.2j/include /usr/local/Cellar/openssl/1.0.2j/lib/libcrypto.a /usr/local/Cellar/openssl/1.0.2j/lib/libssl.a -o mpush
+
+centos:
+
+
+gcc mao_apns_push.c mpush.c -lssl -lcrypto -o mpush
