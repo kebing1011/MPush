@@ -215,7 +215,7 @@ int mao_apns_init(const char* cert_path, int sandbox)
 	char* host;
 	if (sandbox)
 	{
-		host = "sandbox.gateway.push.apple.com:2195";
+		host = "gateway.sandbox.push.apple.com:2195";
 
 	}
 	else
