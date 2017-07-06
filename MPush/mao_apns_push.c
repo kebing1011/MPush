@@ -153,7 +153,8 @@ void mao_apns_token_to_bytes(char* device_token, unsigned char* bytes)
 int mao_apns_push(const char* device_token,
 				  const char* msg,
 				  int badge_count,
-				  int sound_on)
+				  int sound_on,
+				  const char* raw)
 {
 	if (strlen(msg) > 512)
 	{
@@ -165,14 +166,21 @@ int mao_apns_push(const char* device_token,
 	int msgLength;
 	char payload[800] = {0};
     char * fmt;
-	if (sound_on)
+	if (raw != NULL)
 	{
-		fmt = "{\"aps\":{\"alert\":\"%s\",\"badge\":%d,\"sound\":\"chime.aiff\"}}";
-	}else{
-		fmt = "{\"aps\":{\"alert\":\"%s\",\"badge\":%d}}";
+		sprintf(payload, "%s", raw);
 	}
-		
-	sprintf(payload, fmt, msg, badge_count);
+	else
+	{
+		if (sound_on)
+		{
+			fmt = "{\"aps\":{\"alert\":\"%s\",\"badge\":%d,\"sound\":\"chime.aiff\"}}";
+		}else{
+			fmt = "{\"aps\":{\"alert\":\"%s\",\"badge\":%d}}";
+		}
+		sprintf(payload, fmt, msg, badge_count);
+	}
+
 	
 	//trim string
 	char token[255] = {0};
@@ -289,6 +297,7 @@ void mao_apns_close()
 int mao_apns_push_msg(const char* cert_path,
 					  int sandbox,
 					  const char* device_token,
+					  const char* payload,
 					  const char* msg,
 					  int badge_count,
 					  int sound_on,
@@ -306,7 +315,7 @@ int mao_apns_push_msg(const char* cert_path,
 	while (times--)
 	{
 		
-		if (mao_apns_push(device_token, msg, badge_count, sound_on) < 0)
+		if (mao_apns_push(device_token, msg, badge_count, sound_on, payload) < 0)
 		{
 			return -1;
 		}
@@ -324,7 +333,6 @@ int mao_apns_push_msg(const char* cert_path,
 	
 	return 0;
 }
-
 
 
 

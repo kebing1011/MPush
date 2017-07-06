@@ -16,6 +16,7 @@
  *  @param cert_path pem cert path
  *  @param sandbox sandbox cert
  *  @param device_token ios device token (hex string)
+ *  @param payload payload content
  *  @param msg msg content
  *  @param badge_count badge count
  *  @param sound_on sound on: 1  off: 0
@@ -26,6 +27,7 @@
 int mao_apns_push_msg(const char* cert_path,
 					  int sandbox,
 					  const char* device_token,
+					  const char* payload,
 					  const char* msg,
 					  int badge_count,
 					  int sound_on,

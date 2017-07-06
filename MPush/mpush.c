@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <getopt.h>
 #include "mao_apns_push.h"
 
@@ -25,10 +26,11 @@ void usage()
 	printf("or           [-b badge]   \n");
 	printf("or           [-t times]   \n");
 	printf("or           [-s switch to sandbox] \n");
+	printf("or           [-p payload JSON file] \n");
 }
 
 
-const char *short_opts = "sc:d:m:b:t:";
+const char *short_opts = "sc:d:m:b:t:p:";
 
 int main(int argc, char * argv[])
 {
@@ -37,6 +39,8 @@ int main(int argc, char * argv[])
 	char *arg_message = NULL;
 	char *arg_badge = NULL;
 	char *arg_times = NULL;
+	char *arg_payload = NULL;
+
 	char opt = 0;
 	int  sandbox = 0;
 	
@@ -56,6 +60,9 @@ int main(int argc, char * argv[])
 				break;
 			case 't' :
 				arg_times = optarg;
+				break;
+			case 'p' :
+				arg_payload = optarg;
 				break;
 			case 's' :
 				sandbox = 1;
@@ -86,5 +93,23 @@ int main(int argc, char * argv[])
 		times = atoi(arg_times);
 	}
 	
-	return mao_apns_push_msg(arg_cert, sandbox, arg_token, arg_message, badge, 1, times);
+	char* payBuf = NULL;
+	if (arg_payload)
+	{
+		FILE* fp = fopen(arg_payload, "rb");
+		if (fp == NULL)
+		{
+			printf("%s is not exist.\n", arg_payload);
+			return -1;
+		}
+		
+		char buf[512];
+		memset(buf, 0, 512);
+		fread(buf, 1, 512, fp);
+		fclose(fp);
+		
+		payBuf = buf;
+	}
+	
+	return mao_apns_push_msg(arg_cert, sandbox, arg_token, payBuf, arg_message, badge, 1, times);
 }
