@@ -16,7 +16,7 @@
 void usage()
 {
 	printf("+------------------------------+\n");
-	printf("+  mpush v1.0                  +\n");
+	printf("+  mpush v1.1                  +\n");
 	printf("+  push message to ios device. +\n");
 	printf("+  author:maokebing            +\n");
 	printf("+  mail:kebing1011@163.com     +\n");
